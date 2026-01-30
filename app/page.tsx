@@ -1,65 +1,67 @@
-import Image from "next/image";
+'use client';
+
+import DomeGallery from '../components/DomeGallery';
 
 export default function Home() {
+  const infiniteImages = [
+    'https://images.unsplash.com/photo-1755331039789-7e5680e26e8f?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1755569309049-98410b94f66d?q=80&w=772&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1755497595318-7e5e3523854f?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1755353985163-c2a0fe5ac3d8?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1745965976680-d00be7dc0377?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1752588975228-21f44630bb3c?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687221080-5cb261c645cb?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687221363-72518513620e?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687221456-3be29c26e1d4?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687221558-a6b9c170ca2a?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687221891-e6c8e4d89c93?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687220198-88e9bdea9931?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687220247-9f786e34d472?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687220499-d9c06d99709f?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687220566-5599dbbebf11?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687220795-796d3f6f7000?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687220923-c58b9a4592ae?q=80&w=774&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1682687221038-404cb8830901?q=80&w=774&auto=format&fit=crop',
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="fixed inset-0 w-full h-full bg-black overflow-hidden">
+      {/* Dome Gallery */}
+      <DomeGallery
+        images={infiniteImages}
+        fit={1}
+        fitBasis="height"
+        minRadius={400}
+        maxRadius={1200}
+        segments={30}
+        maxVerticalRotationDeg={0}
+        dragSensitivity={15}
+        dragDampening={1.5}
+        enlargeTransitionMs={400}
+        overlayBlurColor="#000000"
+        openedImageWidth="600px"
+        openedImageHeight="600px"
+        imageBorderRadius="20px"
+        openedImageBorderRadius="20px"
+        grayscale={false}
+        autoRotate={true}
+        autoRotateSpeed={0.1}
+      />
+
+      {/* Center Brand Text */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="text-center text-white">
+          <h1 className="text-5xl font-bold md:text-7xl tracking-tight">
+            Click-It
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-4 text-sm md:text-base text-white/70 max-w-md mx-auto">
+            We help brands grow through viral, content-first strategies.
+            Simple. Scalable. Impactful.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
