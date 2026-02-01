@@ -256,7 +256,7 @@ export default function DualWaveCodrops({
     <>
       <div
         ref={wrapperRef}
-        className="relative flex justify-center gap-[25vw] py-[40vh]"
+        className="relative  bg-black flex justify-center gap-[25vw] py-[40vh]"
       >
         {/* LEFT COLUMN */}
         <div className="wave-column-left flex flex-col gap-5 flex-1 items-start">
@@ -264,7 +264,7 @@ export default function DualWaveCodrops({
             <div
               key={i}
               data-image={item.image}
-              className="animated-text uppercase text-[clamp(2rem,3vw,3rem)] leading-[0.7] will-change-transform"
+              className="animated-text uppercase text-[clamp(2rem,3vw,3rem)] leading-[0.7] will-change-transform font-light"
               style={{ color: `rgba(255,255,255,${UNFOCUSED_ALPHA})` }}
             >
               {item.leftText}
@@ -286,7 +286,7 @@ export default function DualWaveCodrops({
           {items.map((item, i) => (
             <div
               key={i}
-              className="animated-text uppercase text-[clamp(2rem,3vw,3rem)] leading-[0.7] will-change-transform"
+              className="animated-text uppercase text-[clamp(2rem,3vw,3rem)] leading-[0.7] will-change-transform font-light"
               style={{ color: `rgba(255,255,255,${UNFOCUSED_ALPHA})` }}
             >
               {item.rightText}
