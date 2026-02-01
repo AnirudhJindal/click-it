@@ -25,7 +25,7 @@ type Props = {
 /* ============================= CONSTANTS ============================= */
 
 const UNFOCUSED_ALPHA = 0.3;
-const IMAGE_OFFSET = 160; // 👈 distance ABOVE focused text (red spot)
+const IMAGE_OFFSET = 300; // 👈 distance ABOVE focused text (red spot)
 
 /* ==================================================================== */
 
@@ -81,10 +81,10 @@ export default function DualWaveCodrops({
     );
 
     leftSettersRef.current = leftTextsRef.current.map((el) =>
-      gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power4.out' })
+      gsap.quickTo(el, 'x', { duration: 0.8, ease: 'power3.out' })
     );
     rightSettersRef.current = rightTextsRef.current.map((el) =>
-      gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power4.out' })
+      gsap.quickTo(el, 'x', { duration: 0.8, ease: 'power3.out' })
     );
 
     /* ---------- RANGE CALC ---------- */
@@ -190,7 +190,7 @@ export default function DualWaveCodrops({
       const focusedCenterY =
         rect.top + rect.height / 2 - wrapperRect.top;
 
-      // 🔥 IMAGE GOES ABOVE FOCUSED ITEM
+      //  IMAGE GOES ABOVE FOCUSED ITEM
       const targetY =
         focusedCenterY -
         IMAGE_OFFSET -
@@ -198,8 +198,8 @@ export default function DualWaveCodrops({
 
       gsap.to(imageRef.current, {
         y: targetY,
-        duration: 0.7,
-        ease: 'power4.out',
+        duration: 0.9,
+        ease: 'power3.out',
       });
     };
 
@@ -209,7 +209,7 @@ export default function DualWaveCodrops({
       trigger: wrapper,
       start: 'top bottom',
       end: 'bottom top',
-      scrub: true,
+      scrub: 1.2,
       onUpdate: (self) => {
         const p = self.progress;
         const focused = closestToCenter();
@@ -296,6 +296,9 @@ export default function DualWaveCodrops({
       </div>
 
       <style jsx>{`
+        .animated-text {
+          transition: color 1s ease;
+        }
         .animated-text.focused {
           color: white !important;
           z-index: 2;

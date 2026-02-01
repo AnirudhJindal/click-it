@@ -5,7 +5,7 @@ import DualWaveCodrops from '../components/DualWave';
 /* ---------------- BRAND DATA ---------------- */
 
 const LEFT_NAMES = [
-  '.',
+  '‎ ',
   'Éclat',
   'Project Ion',
   'AeroLine',
@@ -29,11 +29,11 @@ const LEFT_NAMES = [
   'Vanta',
   'Arc',
   'Module',
-  '.',
+  '‎ ',
 ];
 
 const RIGHT_NAMES = [
-  '.',
+  '‎ ',
   'Chanel',
   'Apple',
   'BMW',
@@ -57,7 +57,7 @@ const RIGHT_NAMES = [
   'Lexus',
   'Gucci',
   'Fendi',
-  '.',
+  '‎ ',
 ];
 
 function generateWaveItems(count: number) {
@@ -73,7 +73,7 @@ function generateWaveItems(count: number) {
 /* ---------------- PAGE ---------------- */
 
 export default function Home() {
-  const waveItems = generateWaveItems(20);
+  const waveItems = generateWaveItems(25);
 
   return (
     <div className="bg-black text-white overflow-x-hidden">
