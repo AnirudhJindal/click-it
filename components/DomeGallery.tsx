@@ -25,6 +25,7 @@ type DomeGalleryProps = {
   grayscale?: boolean;
   autoRotate?: boolean;
   autoRotateSpeed?: number;
+  autoRotateHoverSpeed?: number;
 };
 
 type ItemDef = {
@@ -161,7 +162,8 @@ export default function DomeGallery({
   openedImageBorderRadius = '30px',
   grayscale = true,
   autoRotate = false,
-  autoRotateSpeed = 0.3
+  autoRotateSpeed = 0.2,
+  autoRotateHoverSpeed = 0.5
 }: DomeGalleryProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -223,8 +225,10 @@ export default function DomeGallery({
     if (!autoRotate) return;
 
     const animate = () => {
-      if (isHoveredRef.current && !draggingRef.current && !focusedElRef.current) {
-        rotationRef.current.y += autoRotateSpeed;
+      if (!draggingRef.current && !focusedElRef.current) {
+        // Use hover speed if hovered, otherwise use base speed
+        const currentSpeed = isHoveredRef.current ? autoRotateHoverSpeed : autoRotateSpeed;
+        rotationRef.current.y += currentSpeed;
         applyTransform(rotationRef.current.x, rotationRef.current.y);
       }
       autoRotateRAF.current = requestAnimationFrame(animate);
@@ -237,7 +241,7 @@ export default function DomeGallery({
         cancelAnimationFrame(autoRotateRAF.current);
       }
     };
-  }, [autoRotate, autoRotateSpeed]);
+  }, [autoRotate, autoRotateSpeed, autoRotateHoverSpeed]);
 
   useEffect(() => {
     const root = rootRef.current;
