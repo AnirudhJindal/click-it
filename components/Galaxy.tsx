@@ -1,5 +1,7 @@
+'use client';
+
+import { useEffect, useRef, useCallback } from 'react';
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
-import { useEffect, useRef } from 'react';
 
 const vertexShader = `
 attribute vec2 uv;
@@ -212,14 +214,31 @@ export default function Galaxy({
   const smoothMousePos = useRef({ x: 0.5, y: 0.5 });
   const targetMouseActive = useRef(0.0);
   const smoothMouseActive = useRef(0.0);
+  const rendererRef = useRef<Renderer | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!ctnDom.current) return;
+    const rect = ctnDom.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = 1.0 - (e.clientY - rect.top) / rect.height;
+    targetMousePos.current = { x, y };
+    targetMouseActive.current = 1.0;
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    targetMouseActive.current = 0.0;
+  }, []);
 
   useEffect(() => {
     if (!ctnDom.current) return;
+    
     const ctn = ctnDom.current;
     const renderer = new Renderer({
       alpha: transparent,
       premultipliedAlpha: false
     });
+    rendererRef.current = renderer;
     const gl = renderer.gl;
 
     if (transparent) {
@@ -232,7 +251,7 @@ export default function Galaxy({
 
     let program: Program;
 
-    function resize() {
+    const resize = () => {
       const scale = 1;
       renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
       if (program) {
@@ -242,7 +261,8 @@ export default function Galaxy({
           gl.canvas.width / gl.canvas.height
         );
       }
-    }
+    };
+    
     window.addEventListener('resize', resize, false);
     resize();
 
@@ -277,10 +297,10 @@ export default function Galaxy({
     });
 
     const mesh = new Mesh(gl, { geometry, program });
-    let animateId: number;
 
-    function update(t: number) {
-      animateId = requestAnimationFrame(update);
+    const update = (t: number) => {
+      rafRef.current = requestAnimationFrame(update);
+      
       if (!disableAnimation) {
         program.uniforms.uTime.value = t * 0.001;
         program.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed) / 10.0;
@@ -289,7 +309,6 @@ export default function Galaxy({
       const lerpFactor = 0.05;
       smoothMousePos.current.x += (targetMousePos.current.x - smoothMousePos.current.x) * lerpFactor;
       smoothMousePos.current.y += (targetMousePos.current.y - smoothMousePos.current.y) * lerpFactor;
-
       smoothMouseActive.current += (targetMouseActive.current - smoothMouseActive.current) * lerpFactor;
 
       program.uniforms.uMouse.value[0] = smoothMousePos.current.x;
@@ -297,21 +316,10 @@ export default function Galaxy({
       program.uniforms.uMouseActiveFactor.value = smoothMouseActive.current;
 
       renderer.render({ scene: mesh });
-    }
-    animateId = requestAnimationFrame(update);
+    };
+    
+    rafRef.current = requestAnimationFrame(update);
     ctn.appendChild(gl.canvas);
-
-    function handleMouseMove(e: MouseEvent) {
-      const rect = ctn.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = 1.0 - (e.clientY - rect.top) / rect.height;
-      targetMousePos.current = { x, y };
-      targetMouseActive.current = 1.0;
-    }
-
-    function handleMouseLeave() {
-      targetMouseActive.current = 0.0;
-    }
 
     if (mouseInteraction) {
       ctn.addEventListener('mousemove', handleMouseMove);
@@ -319,14 +327,19 @@ export default function Galaxy({
     }
 
     return () => {
-      cancelAnimationFrame(animateId);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
       window.removeEventListener('resize', resize);
       if (mouseInteraction) {
         ctn.removeEventListener('mousemove', handleMouseMove);
         ctn.removeEventListener('mouseleave', handleMouseLeave);
       }
-      ctn.removeChild(gl.canvas);
+      if (gl.canvas.parentNode) {
+        gl.canvas.parentNode.removeChild(gl.canvas);
+      }
       gl.getExtension('WEBGL_lose_context')?.loseContext();
+      rendererRef.current = null;
     };
   }, [
     focal,
@@ -344,7 +357,9 @@ export default function Galaxy({
     rotationSpeed,
     repulsionStrength,
     autoCenterRepulsion,
-    transparent
+    transparent,
+    handleMouseMove,
+    handleMouseLeave
   ]);
 
   return <div ref={ctnDom} className="w-full h-full relative" {...rest} />;

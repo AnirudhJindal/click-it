@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-gsap.registerPlugin(ScrollTrigger);
-gsap.ticker.fps(60);
-gsap.config({ force3D: true });
+// Register plugins only once
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.ticker.fps(60);
+  gsap.config({ force3D: true });
+}
 
 /* =============================== TYPES =============================== */
 
@@ -25,7 +28,7 @@ type Props = {
 /* ============================= CONSTANTS ============================= */
 
 const UNFOCUSED_ALPHA = 0.3;
-const IMAGE_OFFSET = 300; // 👈 distance ABOVE focused text (red spot)
+const IMAGE_OFFSET = 300;
 
 /* ==================================================================== */
 
@@ -47,10 +50,13 @@ export default function DualWaveCodrops({
 
   const currentImageRef = useRef<string | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
   /* ========================== IMAGE PRELOAD ========================== */
 
   useEffect(() => {
+    let mounted = true;
+
     Promise.all(
       items.map(
         (item) =>
@@ -61,10 +67,45 @@ export default function DualWaveCodrops({
             img.src = item.image;
           })
       )
-    ).then(() => setImagesLoaded(true));
+    ).then(() => {
+      if (mounted) setImagesLoaded(true);
+    });
+
+    return () => {
+      mounted = false;
+    };
   }, [items]);
 
-  /* ============================= GSAP ================================ */
+  /* ============================= RANGE CALC ============================= */
+
+  const calculateRanges = useCallback(() => {
+    if (!wrapperRef.current) return;
+
+    const wrapper = wrapperRef.current;
+    const leftCol = wrapper.querySelector('.wave-column-left') as HTMLElement;
+    const rightCol = wrapper.querySelector('.wave-column-right') as HTMLElement;
+
+    if (!leftCol || !rightCol) return;
+
+    const maxLeftWidth = Math.max(
+      ...leftTextsRef.current.map((t) => t.offsetWidth)
+    );
+    const maxRightWidth = Math.max(
+      ...rightTextsRef.current.map((t) => t.offsetWidth)
+    );
+
+    leftRangeRef.current = {
+      minX: 0,
+      maxX: leftCol.offsetWidth - maxLeftWidth,
+    };
+
+    rightRangeRef.current = {
+      minX: 0,
+      maxX: rightCol.offsetWidth - maxRightWidth,
+    };
+  }, []);
+
+  /* ============================= GSAP SETUP ============================= */
 
   useEffect(() => {
     if (!wrapperRef.current || !imagesLoaded) return;
@@ -73,12 +114,8 @@ export default function DualWaveCodrops({
 
     /* ---------- COLLECT TEXT NODES ---------- */
 
-    leftTextsRef.current = gsap.utils.toArray(
-      '.wave-column-left .animated-text'
-    );
-    rightTextsRef.current = gsap.utils.toArray(
-      '.wave-column-right .animated-text'
-    );
+    leftTextsRef.current = gsap.utils.toArray('.wave-column-left .animated-text');
+    rightTextsRef.current = gsap.utils.toArray('.wave-column-right .animated-text');
 
     leftSettersRef.current = leftTextsRef.current.map((el) =>
       gsap.quickTo(el, 'x', { duration: 0.8, ease: 'power3.out' })
@@ -87,33 +124,7 @@ export default function DualWaveCodrops({
       gsap.quickTo(el, 'x', { duration: 0.8, ease: 'power3.out' })
     );
 
-    /* ---------- RANGE CALC ---------- */
-
-    const calculateRanges = () => {
-      const leftCol = wrapper.querySelector(
-        '.wave-column-left'
-      ) as HTMLElement;
-      const rightCol = wrapper.querySelector(
-        '.wave-column-right'
-      ) as HTMLElement;
-
-      const maxLeftWidth = Math.max(
-        ...leftTextsRef.current.map((t) => t.offsetWidth)
-      );
-      const maxRightWidth = Math.max(
-        ...rightTextsRef.current.map((t) => t.offsetWidth)
-      );
-
-      leftRangeRef.current = {
-        minX: 0,
-        maxX: leftCol.offsetWidth - maxLeftWidth,
-      };
-
-      rightRangeRef.current = {
-        minX: 0,
-        maxX: rightCol.offsetWidth - maxRightWidth,
-      };
-    };
+    /* ---------- INITIAL CALCULATION ---------- */
 
     calculateRanges();
 
@@ -169,7 +180,7 @@ export default function DualWaveCodrops({
       return idx;
     };
 
-    /* ---------- IMAGE ABOVE FOCUSED ITEM ---------- */
+    /* ---------- IMAGE UPDATE ---------- */
 
     const updateImage = (index: number) => {
       if (!imageRef.current) return;
@@ -177,7 +188,6 @@ export default function DualWaveCodrops({
       const focusedEl = leftTextsRef.current[index];
       if (!focusedEl) return;
 
-      // update image src
       const img = focusedEl.dataset.image;
       if (img && img !== currentImageRef.current) {
         currentImageRef.current = img;
@@ -187,14 +197,8 @@ export default function DualWaveCodrops({
       const rect = focusedEl.getBoundingClientRect();
       const wrapperRect = wrapper.getBoundingClientRect();
 
-      const focusedCenterY =
-        rect.top + rect.height / 2 - wrapperRect.top;
-
-      //  IMAGE GOES ABOVE FOCUSED ITEM
-      const targetY =
-        focusedCenterY -
-        IMAGE_OFFSET -
-        imageRef.current.offsetHeight / 2;
+      const focusedCenterY = rect.top + rect.height / 2 - wrapperRect.top;
+      const targetY = focusedCenterY - IMAGE_OFFSET - imageRef.current.offsetHeight / 2;
 
       gsap.to(imageRef.current, {
         y: targetY,
@@ -203,9 +207,9 @@ export default function DualWaveCodrops({
       });
     };
 
-    /* ---------- SCROLL ---------- */
+    /* ---------- SCROLL TRIGGER ---------- */
 
-    const trigger = ScrollTrigger.create({
+    scrollTriggerRef.current = ScrollTrigger.create({
       trigger: wrapper,
       start: 'top bottom',
       end: 'bottom top',
@@ -242,13 +246,17 @@ export default function DualWaveCodrops({
       },
     });
 
+    /* ---------- RESIZE HANDLER ---------- */
+
     window.addEventListener('resize', calculateRanges);
 
     return () => {
-      trigger.kill();
+      if (scrollTriggerRef.current) {
+        scrollTriggerRef.current.kill();
+      }
       window.removeEventListener('resize', calculateRanges);
     };
-  }, [items, waveNumber, waveSpeed, imagesLoaded]);
+  }, [items, waveNumber, waveSpeed, imagesLoaded, calculateRanges]);
 
   /* ============================= JSX ================================ */
 
@@ -256,13 +264,13 @@ export default function DualWaveCodrops({
     <>
       <div
         ref={wrapperRef}
-        className="relative  bg-black flex justify-center gap-[25vw] py-[40vh]"
+        className="relative bg-black flex justify-center gap-[25vw] py-[40vh]"
       >
         {/* LEFT COLUMN */}
         <div className="wave-column-left flex flex-col gap-5 flex-1 items-start">
           {items.map((item, i) => (
             <div
-              key={i}
+              key={`left-${i}`}
               data-image={item.image}
               className="animated-text uppercase text-[clamp(2rem,3vw,3rem)] leading-[0.7] will-change-transform font-light"
               style={{ color: `rgba(255,255,255,${UNFOCUSED_ALPHA})` }}
@@ -285,7 +293,7 @@ export default function DualWaveCodrops({
         <div className="wave-column-right flex flex-col gap-5 flex-1 items-end">
           {items.map((item, i) => (
             <div
-              key={i}
+              key={`right-${i}`}
               className="animated-text uppercase text-[clamp(2rem,3vw,3rem)] leading-[0.7] will-change-transform font-light"
               style={{ color: `rgba(255,255,255,${UNFOCUSED_ALPHA})` }}
             >

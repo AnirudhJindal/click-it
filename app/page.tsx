@@ -1,9 +1,30 @@
 'use client';
 
-import DualWaveCodrops from '../components/DualWave';
-import ActTransition from '../components/Acttransition';
-import Galaxy from '../components/Galaxy';
-import DomeGallery from '../components/DomeGallery';
+import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
+
+// Dynamically import heavy components with no SSR
+const DualWaveCodrops = dynamic(() => import('../components/DualWave'), {
+  ssr: false,
+  loading: () => <div className="min-h-[200vh] bg-black" />
+});
+
+const ActTransition = dynamic(() => import('../components/Acttransition'), {
+  ssr: false,
+  loading: () => <div className="min-h-[200vh] bg-black" />
+});
+
+const Galaxy = dynamic(() => import('../components/Galaxy'), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0 bg-black" />
+});
+
+const DomeGallery = dynamic(() => import('../components/DomeGallery'), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-black" />
+});
+
+// Import lightweight components normally
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -71,10 +92,41 @@ function generateWaveItems(count: number) {
   }));
 }
 
+const MANIFESTO_TEXT = `
+CLICKC IS A NEW WAY TO EARN ONLINE.
+
+PLATFORMS SAY THEY'RE CREATOR-FIRST.
+THEY AREN'T.
+THEY REWARD THEMSELVES.
+NOT THE PEOPLE WHO CREATE THE VALUE.
+
+PEOPLE DON'T BUY FROM BRANDS.
+THEY BUY FROM PEOPLE.
+
+EVERY COMPANY KNOWS THIS.
+THEY NEED REAL VOICES.
+THEY NEED UGC.
+THEY NEED CLIPS THEY CAN'T FAKE.
+
+BUT THE MONEY STILL FLOWS TO PLATFORMS.
+WE SEND IT TO CREATORS AND CLIPPERS.
+
+NO DEGREE.
+NO 9–5.
+NO PERMISSION.
+
+CREATE UGC.
+CLIP CONTENT.
+TURN ATTENTION INTO INCOME.
+
+THIS IS CLICKC.
+`;
+
 /* ---------------- PAGE ---------------- */
 
 export default function Home() {
-  const waveItems = generateWaveItems(22);
+  // Memoize wave items to prevent unnecessary recalculations
+  const waveItems = useMemo(() => generateWaveItems(22), []);
 
   return (
     <div className="relative bg-black text-white overflow-x-hidden">
@@ -144,35 +196,7 @@ export default function Home() {
       {/* ================= MANIFESTO ================= */}
       <section className="relative min-h-[200vh] z-10">
         <ActTransition
-          text="
-          CLICKC IS A NEW WAY TO EARN ONLINE.
-
-          PLATFORMS SAY THEY'RE CREATOR-FIRST.
-          THEY AREN'T.
-          THEY REWARD THEMSELVES.
-          NOT THE PEOPLE WHO CREATE THE VALUE.
-
-          PEOPLE DON'T BUY FROM BRANDS.
-          THEY BUY FROM PEOPLE.
-
-          EVERY COMPANY KNOWS THIS.
-          THEY NEED REAL VOICES.
-          THEY NEED UGC.
-          THEY NEED CLIPS THEY CAN'T FAKE.
-
-          BUT THE MONEY STILL FLOWS TO PLATFORMS.
-          WE SEND IT TO CREATORS AND CLIPPERS.
-
-          NO DEGREE.
-          NO 9–5.
-          NO PERMISSION.
-
-          CREATE UGC.
-          CLIP CONTENT.
-          TURN ATTENTION INTO INCOME.
-
-          THIS IS CLICKC.
-          "
+          text={MANIFESTO_TEXT}
           pinDuration="300%"
         />
       </section>

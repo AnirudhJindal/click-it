@@ -1,5 +1,3 @@
-'use client';
-
 export default function Footer() {
   return (
     <footer className="relative z-10 mt-[30vh] border-t border-white/10">

@@ -4,7 +4,10 @@ import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-gsap.registerPlugin(ScrollTrigger);
+// Register plugin
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 /* ============================= TYPES ============================= */
 
@@ -21,6 +24,7 @@ export default function ActTransition({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
   useEffect(() => {
     if (!titleRef.current || !containerRef.current) return;
@@ -29,7 +33,7 @@ export default function ActTransition({
     const container = containerRef.current;
     
     // Split text into words and chars
-    const words = text.split(' ');
+    const words = text.split(' ').filter(word => word.trim());
     title.innerHTML = words
       .map(word => {
         const chars = word.split('').map(char => `<span class="char">${char}</span>`).join('');
@@ -41,7 +45,9 @@ export default function ActTransition({
     
     // Set perspective on parent
     wordElements.forEach(word => {
-      gsap.set(word.parentNode, { perspective: 1000 });
+      if (word.parentNode) {
+        gsap.set(word.parentNode, { perspective: 1000 });
+      }
     });
 
     // Animate words zooming in from random 3D positions
@@ -69,6 +75,9 @@ export default function ActTransition({
           end: `+=${pinDuration}`,
           scrub: 1.5,
           pin: container,
+          onEnter: (self) => {
+            scrollTriggerRef.current = self as unknown as ScrollTrigger;
+          },
         },
         stagger: {
           each: 0.004,
@@ -78,7 +87,14 @@ export default function ActTransition({
     );
 
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      if (scrollTriggerRef.current) {
+        scrollTriggerRef.current.kill();
+      }
+      ScrollTrigger.getAll().forEach(trigger => {
+        if (trigger.vars.trigger === title) {
+          trigger.kill();
+        }
+      });
     };
   }, [text, pinDuration]);
 
@@ -99,6 +115,12 @@ export default function ActTransition({
           padding: 4rem 8rem;
           will-change: transform;
           transform: translateZ(0);
+        }
+
+        @media (max-width: 768px) {
+          .act-transition-wrapper {
+            padding: 2rem 1.5rem;
+          }
         }
 
         .act-transition-title {
